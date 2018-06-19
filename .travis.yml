@@ -1,14 +1,17 @@
 jobs:
   include:
     - stage: env_preparation
+      language: python
       python: 3.6
       script:
         - echo "Hello Environment Preparation!!!"
     - stage: testing
+      language: python
       python: 3.6
       script:
         - echo "Hello Testing!!!"
     - stage: reporting
+      language: python
       python: 3.6
       script:
         - echo "Hello Reporting!!!"
