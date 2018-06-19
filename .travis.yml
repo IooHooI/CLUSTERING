@@ -1,6 +1,6 @@
 jobs:
   include:
-    - stage: env_preparation
+    - stage: preparation
       language: python
       python: 3.6
       script:
