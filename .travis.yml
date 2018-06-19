@@ -1,0 +1,11 @@
+jobs:
+  include:
+    - stage: env_preparation
+      script:
+        - echo "Hello Environment Preparation!!!"
+    - stage: testing
+      script:
+        - echo "Hello Testing!!!"
+    - stage: reporting
+      script:
+        - echo "Hello Reporting!!!"
