@@ -131,11 +131,7 @@ class CLUSTERINGETL:
     }
 
     _stop_w = stopwords.words('english')
-    _the_trash = frozenset(
-        _stop_w +
-        list(string.punctuation) +
-        list(string.digits)
-    )
+    _the_trash = frozenset(_stop_w + list(string.punctuation) + list(string.digits))
 
     def __init__(self, local_path):
         self.logger = logging.getLogger(CLUSTERINGETL.__name__)
@@ -185,7 +181,7 @@ class CLUSTERINGETL:
             else:
                 self.logger.info('ARCHIVE FILE HAS BEEN ALREADY UNZIPPED')
 
-    def extract_documents(self):
+    def extract_documents(self, docs_count_per_topic=0):
         files = [f for f in os.listdir(self.local_path) if os.path.isfile(os.path.join(self.local_path, f))]
         files = [f for f in files if '.txt' in f]
         topic_labels = dict(zip(list(map(lambda x: x[:-4], files)), range(len(files))))
@@ -201,6 +197,9 @@ class CLUSTERINGETL:
                 documents = full_text.split('Newsgroup: {}'.format(label))
                 labelled_documents.extend(documents)
                 labels.extend([topic_labels[label]] * len(documents))
+        if docs_count_per_topic > 0:
+            labelled_documents = labelled_documents[0:docs_count_per_topic * len(file_paths)]
+            labels = labels[0:docs_count_per_topic * len(file_paths)]
         for i in tqdm(range(len(labelled_documents)), desc='Documents tokenization'):
             labelled_documents[i] = self._transf(labelled_documents[i])
         return labelled_documents, labels
@@ -227,19 +226,6 @@ class CLUSTERINGETL:
 
     @staticmethod
     def _expand_contractions(text, dic):
-        """
-        This method runs through text and replaces all contracted phrases with their full forms.
-        For example: don't --> do not, shouldn't've --> should not have etc.
-        :param text: original text with contractions.
-        :param dic: a dictionary of type:
-                            {
-                                contraction1: full form1,
-                                contraction2: full form2,
-                                ...
-                                contraction_N: full form_N
-                            }
-        :return: the text with full phrase forms.
-        """
         for i, j in dic.items():
             text = text.replace(i, j)
         return text
