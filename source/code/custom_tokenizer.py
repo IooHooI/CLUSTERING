@@ -1,14 +1,11 @@
-from tqdm import tqdm
-import requests
-import os
-import logging
-import zipfile
 import string
+from tqdm import tqdm
 from nltk import word_tokenize
 from nltk.corpus import stopwords
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
-class CLUSTERINGETL:
+class CustomTokenizer(BaseEstimator, TransformerMixin):
 
     _contractions = {
         "ain't": "am not / are not / is not / has not / have not",
@@ -133,76 +130,16 @@ class CLUSTERINGETL:
     _stop_w = stopwords.words('english')
     _the_trash = frozenset(_stop_w + list(string.punctuation) + list(string.digits))
 
-    def __init__(self, local_path):
-        self.logger = logging.getLogger(CLUSTERINGETL.__name__)
-        self.logger.setLevel(logging.INFO)
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
-        self.logger.addHandler(ch)
-        self.logger.info('\nINITIALIZING...')
-        self.local_path = local_path
-        self.logger.info('INITIALIZATION HAS BEEN COMPLETED')
+    def fit_transform(self, X, y=None, **fit_params):
+        return self.transform(X)
 
-    def get_raw_data(self, url):
-        file_name = url.split('/')[-1]
-        if not os.path.exists(os.path.join(self.local_path, file_name)):
-            self.logger.info('ARCHIVE FILE HAS NOT BEEN DOWNLOADED YET')
-            if not os.path.exists(self.local_path):
-                self.logger.info('CREATE LOCAL DIRECTORY')
-                os.mkdir(self.local_path)
-            self.logger.info('START DOWNLOADING ARCHIVE FILE')
-            response = requests.get(url, stream=True)
-            with open(os.path.join(self.local_path, file_name), "wb") as handle:
-                for data in tqdm(response.iter_content()):
-                    handle.write(data)
-            self.logger.info('ARCHIVE FILE DOWNLOADING HAS BEEN COMPLETED')
-            # ==========================================================================================================
-            if not os.path.exists(os.path.join(self.local_path, 'unzipped')):
-                self.logger.info('ARCHIVE FILE HAS NOT BEEN UNZIPPED YET')
-                self.logger.info('UNZIP ARCHIVE FILE')
-                zip_ref = zipfile.ZipFile(os.path.join(self.local_path, file_name), 'r')
-                zip_ref.extractall(self.local_path)
-                zip_ref.close()
-                self.logger.info('ARCHIVE FILE HAS BEEN UNZIPPED')
-                open(os.path.join(self.local_path, 'unzipped'), 'a').close()
-            # ==========================================================================================================
-        else:
-            self.logger.info('ARCHIVE FILE HAS BEEN ALREADY DOWNLOADED')
-            # ==========================================================================================================
-            if not os.path.exists(os.path.join(self.local_path, 'unzipped')):
-                self.logger.info('ARCHIVE FILE HAS NOT BEEN UNZIPPED YET')
-                self.logger.info('UNZIP ARCHIVE FILE')
-                zip_ref = zipfile.ZipFile(os.path.join(self.local_path, file_name), 'r')
-                zip_ref.extractall(self.local_path)
-                zip_ref.close()
-                self.logger.info('ARCHIVE FILE HAS BEEN UNZIPPED')
-                open(os.path.join(self.local_path, 'unzipped'), 'a').close()
-            # ==========================================================================================================
-            else:
-                self.logger.info('ARCHIVE FILE HAS BEEN ALREADY UNZIPPED')
+    def transform(self, X, copy=True):
+        for i in tqdm(range(len(X)), desc='Documents tokenization'):
+            X[i] = self._transf(X[i])
+        return X
 
-    def extract_documents(self, docs_count_per_topic=0):
-        files = [f for f in os.listdir(self.local_path) if os.path.isfile(os.path.join(self.local_path, f))]
-        files = [f for f in files if '.txt' in f]
-        topic_labels = dict(zip(list(map(lambda x: x[:-4], files)), range(len(files))))
-        file_paths = [os.path.join(self.local_path, f) for f in files]
-        labelled_documents = []
-        labels = []
-        for file_path in tqdm(file_paths, desc='Files reading and documents extraction'):
-            with open(file_path, 'r', encoding='utf8', errors='ignore') as documents_source:
-                lines = documents_source.readlines()
-                lines = list(map(str.strip, lines))
-                full_text = ' '.join(lines)
-                label = file_path.split('/')[-1][:-4]
-                documents = full_text.split('Newsgroup: {}'.format(label))
-                labelled_documents.extend(documents)
-                labels.extend([topic_labels[label]] * len(documents))
-        if docs_count_per_topic > 0:
-            labelled_documents = labelled_documents[0:docs_count_per_topic * len(file_paths)]
-            labels = labels[0:docs_count_per_topic * len(file_paths)]
-        for i in tqdm(range(len(labelled_documents)), desc='Documents tokenization'):
-            labelled_documents[i] = self._transf(labelled_documents[i])
-        return labelled_documents, labels
+    def fit(self, X, y=None):
+        pass
 
     def _transf(self, raw_text):
         from nltk.stem import WordNetLemmatizer

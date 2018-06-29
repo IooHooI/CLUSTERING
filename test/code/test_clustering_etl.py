@@ -1,5 +1,5 @@
 import unittest
-from source.code.clustering_etl import CLUSTERINGETL
+from source.code.data_downloader import CLUSTERINGETL
 from collections import Counter
 
 
