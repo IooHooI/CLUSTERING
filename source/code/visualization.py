@@ -1,5 +1,6 @@
 from sklearn.metrics import silhouette_samples, silhouette_score
 
+from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
@@ -92,3 +93,19 @@ def choose_n_clusters(range_n_clusters, data, random_state):
         )
 
         plt.show()
+
+
+def plot_word_clouds(documents, labels, top_features=20):
+    unique_labels = list(set(labels))
+    f, axs = plt.subplots(len(unique_labels), 1, figsize=(50, 25))
+    for label, ax in zip(labels, axs):
+        negative_text = documents[labels == label]
+        neg_wordcloud = WordCloud(collocations=False, max_words=top_features).generate(negative_text)
+        ax.imshow(pos_wordcloud, interpolation="bilinear")
+        ax.axis("off")
+        ax.set_title('Top-{} positive words'.format(top_features), fontsize=45)
+        ax.imshow(neg_wordcloud, interpolation="bilinear")
+        ax.axis("off")
+        ax.set_title('Top-{} negative words'.format(top_features), fontsize=45)
+    plt.tight_layout()
+    plt.show()

@@ -69,9 +69,10 @@ class DataDownloader:
                 full_text = ' '.join(lines)
                 label = file_path.split('/')[-1][:-4]
                 documents = full_text.split('Newsgroup: {}'.format(label))
-                labelled_documents.extend(documents)
-                labels.extend([topic_labels[label]] * len(documents))
-        if docs_count_per_topic > 0:
-            labelled_documents = labelled_documents[0:docs_count_per_topic * len(file_paths)]
-            labels = labels[0:docs_count_per_topic * len(file_paths)]
+                if docs_count_per_topic > 0:
+                    labelled_documents.extend(documents[0:docs_count_per_topic])
+                    labels.extend([topic_labels[label]] * docs_count_per_topic)
+                else:
+                    labelled_documents.extend(documents)
+                    labels.extend([topic_labels[label]] * len(documents))
         return labelled_documents, labels
