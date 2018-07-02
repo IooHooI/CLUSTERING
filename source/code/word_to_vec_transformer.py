@@ -8,7 +8,7 @@ class WordToVecTransformer(BaseEstimator, TransformerMixin):
         self.size = size
         self.word2vec = dict()
 
-    def fit(self, X, y):
+    def fit(self, X, y=None):
         model = gensim.models.Word2Vec(list(map(str.split, X)), size=self.size)
         self.word2vec.update(dict(zip(model.wv.index2word, model.wv.vectors)))
         return self
