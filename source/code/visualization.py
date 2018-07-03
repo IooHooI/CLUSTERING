@@ -96,16 +96,14 @@ def choose_n_clusters(range_n_clusters, data, random_state):
 
 
 def plot_word_clouds(documents, labels, top_features=20):
-    unique_labels = list(set(labels))
-    f, axs = plt.subplots(len(unique_labels), 1, figsize=(50, 25))
-    for label, ax in zip(labels, axs):
-        negative_text = documents[labels == label]
-        neg_wordcloud = WordCloud(collocations=False, max_words=top_features).generate(negative_text)
-        ax.imshow(pos_wordcloud, interpolation="bilinear")
-        ax.axis("off")
-        ax.set_title('Top-{} positive words'.format(top_features), fontsize=45)
-        ax.imshow(neg_wordcloud, interpolation="bilinear")
-        ax.axis("off")
-        ax.set_title('Top-{} negative words'.format(top_features), fontsize=45)
+    unique_labels = np.array(list(set(labels)))
+    f, axs = plt.subplots(len(unique_labels), 1, figsize=(150, 150))
+    for label, ax in zip(unique_labels, axs):
+        labelled_texts = [doc for doc, lab in zip(documents, labels) if lab == label]
+        if sum(list(map(len, labelled_texts))) > 0:
+            wordcloud = WordCloud(collocations=False, max_words=top_features).generate(' '.join(labelled_texts))
+            ax.imshow(wordcloud, interpolation="bilinear")
+            ax.axis("off")
+        ax.set_title('Top-{} words for cluster number {}'.format(top_features, label + 1), fontsize=45)
     plt.tight_layout()
     plt.show()
