@@ -3,8 +3,10 @@ from sklearn.metrics import silhouette_samples, silhouette_score
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import seaborn as sns
 import numpy as np
 from sklearn.cluster import KMeans
+from collections import Counter
 
 
 def choose_n_clusters(range_n_clusters, data, random_state):
@@ -97,13 +99,25 @@ def choose_n_clusters(range_n_clusters, data, random_state):
 
 def plot_word_clouds(documents, labels, top_features=20):
     unique_labels = np.array(list(set(labels)))
+    print(Counter(labels))
     f, axs = plt.subplots(len(unique_labels), 1, figsize=(150, 150))
     for label, ax in zip(unique_labels, axs):
         labelled_texts = [doc for doc, lab in zip(documents, labels) if lab == label]
+        print(sum(list(map(len, labelled_texts))))
         if sum(list(map(len, labelled_texts))) > 0:
             wordcloud = WordCloud(collocations=False, max_words=top_features).generate(' '.join(labelled_texts))
             ax.imshow(wordcloud, interpolation="bilinear")
             ax.axis("off")
-        ax.set_title('Top-{} words for cluster number {}'.format(top_features, label + 1), fontsize=45)
+            ax.set_title('Top-{} words for cluster number {}'.format(top_features, label + 1), fontsize=45)
     plt.tight_layout()
+    plt.show()
+
+
+def plot_confusion_matrixes(matrixes, titles):
+    f, axs = plt.subplots(1, len(matrixes), figsize=(45, 15))
+    for mat, title, ax in zip(matrixes, titles, axs):
+        sns.heatmap(mat.T, square=True, fmt='d', ax=ax)
+        ax.set_title(title)
+        ax.set_xlabel('true label')
+        ax.set_ylabel('predicted label')
     plt.show()
