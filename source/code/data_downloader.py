@@ -66,6 +66,13 @@ class DataDownloader:
             with open(file_path, 'r', encoding='utf8', errors='ignore') as documents_source:
                 lines = documents_source.readlines()
                 lines = list(map(str.strip, lines))
+                lines = list(filter(lambda line: 'From: ' not in line, lines))
+                lines = list(filter(lambda line: 'Subject: ' not in line, lines))
+                lines = list(filter(lambda line: 'document_id: ' not in line, lines))
+                lines = list(filter(lambda line: 'Last-modified: ' not in line, lines))
+                lines = list(filter(lambda line: 'Version: ' not in line, lines))
+                lines = list(filter(lambda line: '@' not in line, lines))
+                lines = list(filter(lambda line: len(line) > 0, lines))
                 full_text = ' '.join(lines)
                 label = file_path.split('/')[-1][:-4]
                 documents = full_text.split('Newsgroup: {}'.format(label))

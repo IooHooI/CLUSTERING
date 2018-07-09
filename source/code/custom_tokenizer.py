@@ -155,7 +155,7 @@ class CustomTokenizer(BaseEstimator, TransformerMixin):
         l_t_d = self._lemmatize(t_r_t_w_c_a_s_w, w_n_l, 'v')
         l_t_d = self._lemmatize(l_t_d, w_n_l, 'n')
         # Shrinked lemmatized tokenized document
-        s_l_t_d = [token for token in l_t_d if len(token) > 2 and not self._filter(token)]
+        s_l_t_d = [token for token in l_t_d if len(token) > 3 and not self._filter(token)]
         return ' '.join(s_l_t_d)
 
     def _filter(self, word):

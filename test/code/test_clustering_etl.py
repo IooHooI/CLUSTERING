@@ -16,10 +16,6 @@ class TestCLUSTERINGETL(unittest.TestCase):
         self.assertEqual(len(documents), len(labels), 'All documents should have a label!!!')
         self.assertEqual(20, len(Counter(labels).keys()), 'The topics count should be equal 20!!!')
 
-    def test_counter(self):
-        list_ = [1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 1, 4, 2, 1, 4, 2]
-        print(list_ == 1)
-
 
 if __name__ == '__main__':
     unittest.main()
