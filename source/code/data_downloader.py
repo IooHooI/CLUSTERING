@@ -55,7 +55,7 @@ class DataDownloader:
             else:
                 self.logger.info('ARCHIVE FILE HAS BEEN ALREADY UNZIPPED')
 
-    def extract_documents(self, docs_count_per_topic=0):
+    def extract_documents(self, docs_count_per_topic=0, max_doc_len=0):
         files = [f for f in os.listdir(self.local_path) if os.path.isfile(os.path.join(self.local_path, f))]
         files = [f for f in files if '.txt' in f]
         topic_labels = dict(zip(list(map(lambda x: x[:-4], files)), range(len(files))))
@@ -82,4 +82,12 @@ class DataDownloader:
                 else:
                     labelled_documents.extend(documents)
                     labels.extend([topic_labels[label]] * len(documents))
-        return labelled_documents, labels
+        if max_doc_len > 0:
+            final_labelled_documents = []
+            final_labels = []
+            for doc, label in zip(labelled_documents, labels):
+                if len(doc) <= max_doc_len:
+                    final_labelled_documents.append(doc)
+                    final_labels.append(label)
+            return final_labelled_documents, final_labels, list(map(lambda x: x[:-4], files))
+        return labelled_documents, labels, list(map(lambda x: x[:-4], files))

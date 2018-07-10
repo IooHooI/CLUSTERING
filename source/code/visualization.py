@@ -5,11 +5,15 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import seaborn as sns
 import numpy as np
+import pandas as pd
 from sklearn.cluster import KMeans
-from collections import Counter
 
 
 def choose_n_clusters(range_n_clusters, data, random_state):
+    avg_values = []
+    std_values = []
+    min_values = []
+    max_values = []
     for n_clusters in range_n_clusters:
         # Create a subplot with 1 row and 2 columns
         fig, ax1 = plt.subplots(1, 1)
@@ -32,25 +36,13 @@ def choose_n_clusters(range_n_clusters, data, random_state):
         # This gives a perspective into the density and separation of the formed
         # clusters
         silhouette_avg = silhouette_score(data, cluster_labels)
-        print(
-            "For n_clusters =", n_clusters, "The average silhouette_score is :",
-            silhouette_avg
-        )
+        avg_values.append(silhouette_avg)
 
         # Compute the silhouette scores for each sample
         sample_silhouette_values = silhouette_samples(data, cluster_labels)
-        print(
-            "For n_clusters =", n_clusters, "The standard deviation of silhouette_score is :",
-            np.std(sample_silhouette_values)
-        )
-        print(
-            "For n_clusters =", n_clusters, "The min value of silhouette_score is :",
-            min(sample_silhouette_values)
-        )
-        print(
-            "For n_clusters =", n_clusters, "The max value of silhouette_score is :",
-            max(sample_silhouette_values)
-        )
+        std_values.append(np.std(sample_silhouette_values))
+        min_values.append(min(sample_silhouette_values))
+        max_values.append(max(sample_silhouette_values))
         y_lower = 10
         for i in range(n_clusters):
             # Aggregate the silhouette scores for samples belonging to
@@ -95,21 +87,22 @@ def choose_n_clusters(range_n_clusters, data, random_state):
         )
 
         plt.show()
+    return pd.DataFrame(data={'avg': avg_values, 'std': std_values, 'min': min_values, 'max': max_values})
 
 
 def plot_word_clouds(documents, labels, label_names=None, top_features=20):
-    unique_labels = np.array(list(set(labels)))
-    print(Counter(labels))
+    unique_labels = np.array(sorted(list(set(labels))))
+    # print(Counter(labels))
     f, axs = plt.subplots(len(unique_labels), 1, figsize=(150, 150))
     for label, ax in zip(unique_labels, axs):
         labelled_texts = [doc for doc, lab in zip(documents, labels) if lab == label]
-        print(sum(list(map(len, labelled_texts))))
+        # print(sum(list(map(len, labelled_texts))))
         if sum(list(map(len, labelled_texts))) > 0:
             wordcloud = WordCloud(collocations=False, max_words=top_features).generate(' '.join(labelled_texts))
             ax.imshow(wordcloud, interpolation="bilinear")
             ax.axis("off")
             ax.set_title(
-                'Top-{} words for cluster: {}'.format(top_features, label_names[label] if not None else label + 1),
+                'Top-{} words for cluster: {}'.format(top_features, label_names[label] if label_names is not None else label + 1),
                 fontsize=45
             )
     plt.tight_layout()
